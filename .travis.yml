@@ -1,0 +1,38 @@
+sudo: false
+language: sourcepawn
+
+addons:
+  apt_packages:
+    - lib32stdc++6
+
+matrix:
+  allow_failures:
+    - env: SOURCEMOD=1.10
+
+env:
+  - SOURCEMOD=1.8
+  - SOURCEMOD=1.9
+  - SOURCEMOD=1.10
+
+before_script:
+  - wget "https://www.sourcemod.net/latest.php?version=$SOURCEMOD&os=linux" -O game/sourcemod-$SOURCEMOD-linux.tar.gz
+  - cd game
+  - tar -xzf sourcemod-$SOURCEMOD-linux.tar.gz
+  - cd addons/sourcemod/scripting/
+  - wget https://raw.githubusercontent.com/KyleSanderson/SteamWorks/master/Pawn/includes/SteamWorks.inc -O includes/SteamWorks.inc
+  - wget https://raw.githubusercontent.com/thraaawn/SMJansson/master/pawn/scripting/include/smjansson.inc -O include/smjansson.inc
+  - chmod +x spcomp
+
+script:
+  - ./compile.sh sbpp_discord.sp
+
+deploy:
+  provider: releases
+  api_key: "$githubkey"
+  file: "$TRAVIS_BUILD_DIR/addons/sourcemod/scripting/compiled/sbpp.smx"
+  skip_cleanup: true
+  on:
+    tags: true
+
+notifications:
+  email: false
