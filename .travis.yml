@@ -6,6 +6,7 @@ addons:
     - lib32stdc++6
 
 matrix:
+  fast_finish: true
   allow_failures:
     - env: SOURCEMOD=1.10
 
