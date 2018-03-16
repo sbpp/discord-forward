@@ -15,8 +15,7 @@ env:
   - SOURCEMOD=1.10
 
 before_script:
-  - wget "https://www.sourcemod.net/latest.php?version=$SOURCEMOD&os=linux" -O game/sourcemod-$SOURCEMOD-linux.tar.gz
-  - cd game
+  - wget "https://www.sourcemod.net/latest.php?version=$SOURCEMOD&os=linux" -O sourcemod-$SOURCEMOD-linux.tar.gz
   - tar -xzf sourcemod-$SOURCEMOD-linux.tar.gz
   - cd addons/sourcemod/scripting/
   - wget https://raw.githubusercontent.com/KyleSanderson/SteamWorks/master/Pawn/includes/SteamWorks.inc -O includes/SteamWorks.inc
