@@ -17,6 +17,7 @@ env:
 before_script:
   - wget "https://www.sourcemod.net/latest.php?version=$SOURCEMOD&os=linux" -O sourcemod-$SOURCEMOD-linux.tar.gz
   - tar -xzf sourcemod-$SOURCEMOD-linux.tar.gz
+  - mv sbpp_discord.sp addons/sourceomd/scripting/
   - cd addons/sourcemod/scripting/
   - wget https://raw.githubusercontent.com/KyleSanderson/SteamWorks/master/Pawn/includes/SteamWorks.inc -O include/SteamWorks.inc
   - wget https://raw.githubusercontent.com/thraaawn/SMJansson/master/pawn/scripting/include/smjansson.inc -O include/smjansson.inc
@@ -28,7 +29,7 @@ script:
 deploy:
   provider: releases
   api_key: "$githubkey"
-  file: "$TRAVIS_BUILD_DIR/addons/sourcemod/scripting/compiled/sbpp.smx"
+  file: "$TRAVIS_BUILD_DIR/addons/sourcemod/scripting/compiled/sbpp_discord.smx"
   skip_cleanup: true
   on:
     tags: true
