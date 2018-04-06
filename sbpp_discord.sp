@@ -1,7 +1,7 @@
 #pragma semicolon 1
 
 #define PLUGIN_AUTHOR "RumbleFrog, SourceBans++ Dev Team"
-#define PLUGIN_VERSION "1.0.1"
+#define PLUGIN_VERSION "1.0.2"
 
 #include <sourcemod>
 #include <sourcebanspp>
@@ -44,6 +44,12 @@ public void OnPluginStart()
 
 	Convars[Ban].AddChangeHook(OnConvarChanged);
 	Convars[Report].AddChangeHook(OnConvarChanged);
+}
+
+public void OnConfigsExecuted()
+{
+	Convars[Ban].GetString(sEndpoints[Ban], sizeof sEndpoints[]);
+	Convars[Report].GetString(sEndpoints[Report], sizeof sEndpoints[]);
 }
 
 public void SBPP_OnBanPlayer(int iAdmin, int iTarget, int iTime, const char[] sReason)
