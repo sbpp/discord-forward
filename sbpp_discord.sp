@@ -1,7 +1,7 @@
 #pragma semicolon 1
 
 #define PLUGIN_AUTHOR "RumbleFrog, SourceBans++ Dev Team"
-#define PLUGIN_VERSION "1.0.0"
+#define PLUGIN_VERSION "1.0.1"
 
 #include <sourcemod>
 #include <sourcebanspp>
@@ -67,7 +67,7 @@ void SendReport(int iClient, int iTarget, const char[] sReason, int iTime = -1)
 		return;
 	}
 
-	char sAuthor[MAX_NAME_LENGTH], sTarget[MAX_NAME_LENGTH], sAuthorID[32], sTargetID64[32], sTargetID[32], sJson[2048], sBuffer[256], sTime[32];
+	char sAuthor[MAX_NAME_LENGTH], sTarget[MAX_NAME_LENGTH], sAuthorID[32], sTargetID64[32], sTargetID[32], sJson[2048], sBuffer[256], sTime[64];
 
 	if (IsValidClient(iClient))
 	{
