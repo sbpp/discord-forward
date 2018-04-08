@@ -1,7 +1,7 @@
 #pragma semicolon 1
 
 #define PLUGIN_AUTHOR "RumbleFrog, SourceBans++ Dev Team"
-#define PLUGIN_VERSION "1.0.2"
+#define PLUGIN_VERSION "1.0.3"
 
 #include <sourcemod>
 #include <sourcebanspp>
@@ -37,17 +37,17 @@ public void OnPluginStart()
 	Convars[Ban] = CreateConVar("sbpp_discord_banhook", "", "Discord web hook endpoint for ban forward", FCVAR_PROTECTED);
 	Convars[Report] = CreateConVar("sbpp_discord_reporthook", "", "Discord web hook endpoint for report forward. If left empty, the ban endpoint will be used instead", FCVAR_PROTECTED);
 
-	FindConVar("hostname").GetString(sHostname, sizeof sHostname);
-
-	int iIPB = FindConVar("hostip").IntValue;
-	Format(sHost, sizeof sHost, "%d.%d.%d.%d:%d", iIPB >> 24 & 0x000000FF, iIPB >> 16 & 0x000000FF, iIPB >> 8 & 0x000000FF, iIPB & 0x000000FF, FindConVar("hostport").IntValue);
-
 	Convars[Ban].AddChangeHook(OnConvarChanged);
 	Convars[Report].AddChangeHook(OnConvarChanged);
 }
 
 public void OnConfigsExecuted()
 {
+	FindConVar("hostname").GetString(sHostname, sizeof sHostname);
+
+	int iIPB = FindConVar("hostip").IntValue;
+	Format(sHost, sizeof sHost, "%d.%d.%d.%d:%d", iIPB >> 24 & 0x000000FF, iIPB >> 16 & 0x000000FF, iIPB >> 8 & 0x000000FF, iIPB & 0x000000FF, FindConVar("hostport").IntValue);
+	
 	Convars[Ban].GetString(sEndpoints[Ban], sizeof sEndpoints[]);
 	Convars[Report].GetString(sEndpoints[Report], sizeof sEndpoints[]);
 }
