@@ -1,7 +1,7 @@
 #pragma semicolon 1
 
 #define PLUGIN_AUTHOR "RumbleFrog, SourceBans++ Dev Team"
-#define PLUGIN_VERSION "1.0.3"
+#define PLUGIN_VERSION "1.0.4"
 
 #include <sourcemod>
 #include <sourcebanspp>
@@ -73,7 +73,7 @@ void SendReport(int iClient, int iTarget, const char[] sReason, int iTime = -1)
 		return;
 	}
 
-	char sAuthor[MAX_NAME_LENGTH], sTarget[MAX_NAME_LENGTH], sAuthorID[32], sTargetID64[32], sTargetID[32], sJson[2048], sBuffer[256], sTime[64];
+	char sAuthor[MAX_NAME_LENGTH], sTarget[MAX_NAME_LENGTH], sAuthorID[32], sTargetID64[32], sTargetID[32], sJson[2048], sBuffer[256];
 
 	if (IsValidClient(iClient))
 	{
@@ -89,8 +89,6 @@ void SendReport(int iClient, int iTarget, const char[] sReason, int iTime = -1)
 	GetClientName(iTarget, sTarget, sizeof sTarget);
 	GetClientAuthId(iTarget, AuthId_Steam2, sTargetID, sizeof sTargetID);
 
-	FormatTime(sTime, sizeof sTime, "%FT%TZ");
-
 	Handle jRequest = json_object();
 
 	Handle jEmbeds = json_array();
@@ -99,7 +97,6 @@ void SendReport(int iClient, int iTarget, const char[] sReason, int iTime = -1)
 	Handle jContent = json_object();
 
 	json_object_set(jContent, "color", json_integer((iTime != -1) ? 14294407 : 16374082));
-	json_object_set(jContent, "timestamp", json_string(sTime));
 
 	Handle jContentAuthor = json_object();
 
