@@ -59,9 +59,19 @@ public void OnPluginStart()
 public void OnConfigsExecuted()
 {
 	FindConVar("hostname").GetString(sHostname, sizeof sHostname);
-
-	int iIPB = FindConVar("hostip").IntValue;
-	Format(sHost, sizeof sHost, "%d.%d.%d.%d:%d", iIPB >> 24 & 0x000000FF, iIPB >> 16 & 0x000000FF, iIPB >> 8 & 0x000000FF, iIPB & 0x000000FF, FindConVar("hostport").IntValue);
+	
+	int ip[4];
+	
+	SteamWorks_GetPublicIP(ip);
+	
+	if (SteamWorks_GetPublicIP(ip))
+	{
+		Format(sHost, sizeof sHost, "%d.%d.%d.%d:%d", ip[0], ip[1], ip[2], ip[3], FindConVar("hostport").IntValue);
+	} else
+	{
+		int iIPB = FindConVar("hostip").IntValue;
+		Format(sHost, sizeof sHost, "%d.%d.%d.%d:%d", iIPB >> 24 & 0x000000FF, iIPB >> 16 & 0x000000FF, iIPB >> 8 & 0x000000FF, iIPB & 0x000000FF, FindConVar("hostport").IntValue);
+	}
 	
 	Convars[Ban].GetString(sEndpoints[Ban], sizeof sEndpoints[]);
 	Convars[Report].GetString(sEndpoints[Report], sizeof sEndpoints[]);
