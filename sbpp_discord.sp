@@ -194,6 +194,8 @@ void SendReport(int iClient, int iTarget, const char[] sReason, int iType = Ban,
 		GetCommType(cType, sizeof cType, extra);
 		
 		json_object_set_new(jFieldCommType, "value", json_string(cType));
+		
+		json_array_append_new(jFields, jFieldCommType);
 	}
 
 	json_array_append_new(jFields, jFieldReason);
