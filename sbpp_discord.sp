@@ -175,6 +175,8 @@ void SendReport(int iClient, int iTarget, const char[] sReason, int iType = Ban,
 
 		if (iTime > 0)
 			Format(sBuffer, sizeof sBuffer, "%d Minutes", iTime);
+		else if (iTime < 0)
+			Format(sBuffer, sizeof sBuffer, "Session");
 		else
 			Format(sBuffer, sizeof sBuffer, "Permanent");
 
