@@ -253,7 +253,8 @@ public int OnHTTPRequestComplete(Handle hRequest, bool bFailure, bool bRequestSu
 			SteamWorks_GetHTTPResponseBodyData(hRequest, sBody, iSize);
 
 			PrintToServer(sBody);
-			PrintToServer("%d", eStatusCode);
+			PrintToServer("Status Code: %d", eStatusCode);
+			PrintToServer("SteamWorks_IsLoaded: %d", SteamWorks_IsLoaded());
 		#endif
 	}
 
