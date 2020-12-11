@@ -27,6 +27,8 @@ int EmbedColors[Type_Count] = {
 };
 
 ConVar Convars[Type_Count],
+	Username,
+	ProfilePictureURL,
 	WebsiteBaseURL;
 
 char sEndpoints[Type_Count][256]
@@ -53,6 +55,10 @@ public void OnPluginStart()
 	Convars[Comms] = CreateConVar("sbpp_discord_commshook", "", "Discord web hook endpoint for comms forward. If left empty, the ban endpoint will be used instead", FCVAR_PROTECTED);
 
 	WebsiteBaseURL = CreateConVar("sbpp_website_url", "", "The base url of your website. Leave empty to disable");
+
+	Username = CreateConVar("sbpp_discord_username", "Sourcebans++", "The username of the webhook");
+
+	ProfilePictureURL = CreateConVar("sbpp_discord_pp_url", "https://sbpp.github.io/img/favicons/android-chrome-512x512.png", "A URL pointing to the profile picture for the webhook.");
 
 	AutoExecConfig(true,"sbpp_discord");
 
@@ -109,7 +115,18 @@ void SendReport(int iClient, int iTarget, const char[] sReason, int iType = Ban,
 		return;
 	}
 
-	char sAuthor[MAX_NAME_LENGTH], sTarget[MAX_NAME_LENGTH], sAuthorID[32], sTargetID64[32], sTargetID[32], sJson[2048], sBuffer[256];
+	char sAuthor[MAX_NAME_LENGTH], 
+		sTarget[MAX_NAME_LENGTH], 
+		sAuthorID[32], 
+		sTargetID64[32], 
+		sTargetID[32], 
+		sJson[2048], 
+		sBuffer[256],
+		szUsername[128],
+		szProfilePictureURL[256];
+
+	GetConVarString(ProfilePictureURL, szProfilePictureURL, sizeof szProfilePictureURL);
+	GetConVarString(Username, szUsername, sizeof szUsername);
 
 	if (IsValidClient(iClient))
 	{
@@ -155,14 +172,14 @@ void SendReport(int iClient, int iTarget, const char[] sReason, int iType = Ban,
 	json_object_set_new(jContentAuthor, "name", json_string(sTarget));
 	Format(sBuffer, sizeof sBuffer, "https://steamcommunity.com/profiles/%s", sTargetID64);
 	json_object_set_new(jContentAuthor, "url", json_string(sBuffer));
-	json_object_set_new(jContentAuthor, "icon_url", json_string("https://sbpp.github.io/img/favicons/android-chrome-512x512.png"));
+	json_object_set_new(jContentAuthor, "icon_url", json_string(szProfilePictureURL));
 	json_object_set_new(jContent, "author", jContentAuthor);
 
 	Handle jContentFooter = json_object();
 
 	Format(sBuffer, sizeof sBuffer, "%s (%s)", sHostname, sHost);
 	json_object_set_new(jContentFooter, "text", json_string(sBuffer));
-	json_object_set_new(jContentFooter, "icon_url", json_string("https://sbpp.github.io/img/favicons/android-chrome-512x512.png"));
+	json_object_set_new(jContentFooter, "icon_url", json_string(szProfilePictureURL));
 	json_object_set_new(jContent, "footer", jContentFooter);
 
 
@@ -230,8 +247,8 @@ void SendReport(int iClient, int iTarget, const char[] sReason, int iType = Ban,
 
 	json_array_append_new(jEmbeds, jContent);
 
-	json_object_set_new(jRequest, "username", json_string("SourceBans++"));
-	json_object_set_new(jRequest, "avatar_url", json_string("https://sbpp.github.io/img/favicons/android-chrome-512x512.png"));
+	json_object_set_new(jRequest, "username", json_string(szUsername));
+	json_object_set_new(jRequest, "avatar_url", json_string(szProfilePictureURL));
 	json_object_set_new(jRequest, "embeds", jEmbeds);
 
 
