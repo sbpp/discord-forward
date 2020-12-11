@@ -26,7 +26,8 @@ int EmbedColors[Type_Count] = {
 	0x4362FA, // Comms
 };
 
-ConVar Convars[Type_Count];
+ConVar Convars[Type_Count],
+	WebsiteBaseURL;
 
 char sEndpoints[Type_Count][256]
 	, sHostname[64]
@@ -50,6 +51,10 @@ public void OnPluginStart()
 	Convars[Report] = CreateConVar("sbpp_discord_reporthook", "", "Discord web hook endpoint for report forward. If left empty, the ban endpoint will be used instead", FCVAR_PROTECTED);
 	
 	Convars[Comms] = CreateConVar("sbpp_discord_commshook", "", "Discord web hook endpoint for comms forward. If left empty, the ban endpoint will be used instead", FCVAR_PROTECTED);
+
+	WebsiteBaseURL = CreateConVar("sbpp_website_url", "", "The base url of your website. Leave empty to disable");
+
+	AutoExecConfig(true,"sbpp_discord");
 
 	Convars[Ban].AddChangeHook(OnConvarChanged);
 	Convars[Report].AddChangeHook(OnConvarChanged);
@@ -83,7 +88,7 @@ public void SBPP_OnBanPlayer(int iAdmin, int iTarget, int iTime, const char[] sR
 	SendReport(iAdmin, iTarget, sReason, Ban, iTime);
 }
 
-public void SourceComms_OnBlockAdded(int iAdmin, int iTarget, int iTime, int iCommType, char[] sReason)
+public int SourceComms_OnBlockAdded(int iAdmin, int iTarget, int iTime, int iCommType, char[] sReason)
 {
 	SendReport(iAdmin, iTarget, sReason, Comms, iTime, iCommType);
 }
@@ -128,6 +133,22 @@ void SendReport(int iClient, int iTarget, const char[] sReason, int iType = Ban,
 	Handle jContent = json_object();
 	
 	json_object_set(jContent, "color", json_integer(GetEmbedColor(iType)));
+
+	char szURLBuffer[512];
+	GetConVarString(WebsiteBaseURL, szURLBuffer, sizeof(szURLBuffer));
+
+	if(!(StrEqual(szURLBuffer, "")))
+	{
+		json_object_set(jContent, "title", json_string("View on Sourcebans"));
+	
+		if(iType == Comms)
+			Format(sBuffer, sizeof sBuffer, "%s/index.php?p=commslist&searchText=%s", szURLBuffer, sTargetID);
+		else if (iType == Ban)
+			Format(sBuffer, sizeof sBuffer, "%s/index.php?p=banlist&searchText=%s", szURLBuffer, sTargetID);
+		else if (iType == Report)
+			Format(sBuffer, sizeof sBuffer, "%s/sourceban/index.php?p=admin&c=bans#^2", szURLBuffer);
+		json_object_set(jContent, "url", json_string(sBuffer));
+	}
 
 	Handle jContentAuthor = json_object();
 
