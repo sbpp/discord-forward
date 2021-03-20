@@ -94,7 +94,7 @@ public void SBPP_OnBanPlayer(int iAdmin, int iTarget, int iTime, const char[] sR
 	SendReport(iAdmin, iTarget, sReason, Ban, iTime);
 }
 
-public int SourceComms_OnBlockAdded(int iAdmin, int iTarget, int iTime, int iCommType, char[] sReason)
+public void SourceComms_OnBlockAdded(int iAdmin, int iTarget, int iTime, int iCommType, char[] sReason)
 {
 	SendReport(iAdmin, iTarget, sReason, Comms, iTime, iCommType);
 }
