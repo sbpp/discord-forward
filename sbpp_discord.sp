@@ -163,7 +163,7 @@ void SendReport(int iClient, int iTarget, const char[] sReason, int iType = Ban,
 		else if (iType == Ban)
 			Format(sBuffer, sizeof sBuffer, "%s/index.php?p=banlist&searchText=%s", szURLBuffer, sTargetID);
 		else if (iType == Report)
-			Format(sBuffer, sizeof sBuffer, "%s/sourceban/index.php?p=admin&c=bans#^2", szURLBuffer);
+			Format(sBuffer, sizeof sBuffer, "%s/index.php?p=admin&c=bans#^2", szURLBuffer);
 		json_object_set(jContent, "url", json_string(sBuffer));
 	}
 
