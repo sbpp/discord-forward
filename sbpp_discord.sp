@@ -1,7 +1,7 @@
 #pragma semicolon 1
 
 #define PLUGIN_AUTHOR "RumbleFrog, SourceBans++ Dev Team"
-#define PLUGIN_VERSION "1.1.0"
+#define PLUGIN_VERSION "1.2.0"
 
 #include <sourcemod>
 #include <sourcebanspp>
@@ -29,11 +29,13 @@ int EmbedColors[Type_Count] = {
 ConVar Convars[Type_Count],
 	Username,
 	ProfilePictureURL,
-	WebsiteBaseURL;
+	WebsiteBaseURL,
+	DiscordRoleID;
 
 char sEndpoints[Type_Count][256]
 	, sHostname[64]
-	, sHost[64];
+	, sHost[64]
+	, sDiscordRoleID[32];
 
 public Plugin myinfo =
 {
@@ -46,25 +48,28 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
-	CreateConVar("sbpp_discord_version", PLUGIN_VERSION, "SBPP Discord Version", FCVAR_REPLICATED | FCVAR_SPONLY | FCVAR_DONTRECORD | FCVAR_NOTIFY);
+	CreateConVar("sbpp_discord_version", PLUGIN_VERSION, "SBPP Discord Version.", FCVAR_REPLICATED | FCVAR_SPONLY | FCVAR_DONTRECORD | FCVAR_NOTIFY);
 
-	Convars[Ban] = CreateConVar("sbpp_discord_banhook", "", "Discord web hook endpoint for ban forward", FCVAR_PROTECTED);
+	Convars[Ban] = CreateConVar("sbpp_discord_banhook", "", "Discord web hook endpoint for ban forward. Leave empty to disable.", FCVAR_PROTECTED);
 	
-	Convars[Report] = CreateConVar("sbpp_discord_reporthook", "", "Discord web hook endpoint for report forward. If left empty, the ban endpoint will be used instead", FCVAR_PROTECTED);
+	Convars[Report] = CreateConVar("sbpp_discord_reporthook", "", "Discord web hook endpoint for report forward. Leave empty to disable.", FCVAR_PROTECTED);
 	
-	Convars[Comms] = CreateConVar("sbpp_discord_commshook", "", "Discord web hook endpoint for comms forward. If left empty, the ban endpoint will be used instead", FCVAR_PROTECTED);
+	Convars[Comms] = CreateConVar("sbpp_discord_commshook", "", "Discord web hook endpoint for comms forward. Leave empty to disable.", FCVAR_PROTECTED);
 
-	WebsiteBaseURL = CreateConVar("sbpp_website_url", "", "The base url of your website. Leave empty to disable");
+	WebsiteBaseURL = CreateConVar("sbpp_website_url", "", "The base url of your website. Leave empty to disable.");
 
-	Username = CreateConVar("sbpp_discord_username", "Sourcebans++", "The username of the webhook");
+	Username = CreateConVar("sbpp_discord_username", "Sourcebans++", "The username of the webhook.");
 
 	ProfilePictureURL = CreateConVar("sbpp_discord_pp_url", "https://sbpp.github.io/img/favicons/android-chrome-512x512.png", "A URL pointing to the profile picture for the webhook.");
+
+	DiscordRoleID = CreateConVar("sbpp_discord_roleid", "", "The Discord role id that you would like mentioned when receiving a report. Leave empty to disable.");
 
 	AutoExecConfig(true,"sbpp_discord");
 
 	Convars[Ban].AddChangeHook(OnConvarChanged);
 	Convars[Report].AddChangeHook(OnConvarChanged);
 	Convars[Comms].AddChangeHook(OnConvarChanged);
+	DiscordRoleID.AddChangeHook(OnConvarChanged);
 }
 
 public void OnConfigsExecuted()
@@ -87,33 +92,31 @@ public void OnConfigsExecuted()
 	Convars[Ban].GetString(sEndpoints[Ban], sizeof sEndpoints[]);
 	Convars[Report].GetString(sEndpoints[Report], sizeof sEndpoints[]);
 	Convars[Comms].GetString(sEndpoints[Comms], sizeof sEndpoints[]);
+	DiscordRoleID.GetString(sDiscordRoleID, sizeof sDiscordRoleID);
 }
 
 public void SBPP_OnBanPlayer(int iAdmin, int iTarget, int iTime, const char[] sReason)
 {
-	SendReport(iAdmin, iTarget, sReason, Ban, iTime);
+	if (!StrEqual(sEndpoints[Ban], ""))
+		SendReport(iAdmin, iTarget, sReason, Ban, iTime);
 }
 
 public void SourceComms_OnBlockAdded(int iAdmin, int iTarget, int iTime, int iCommType, char[] sReason)
 {
-	SendReport(iAdmin, iTarget, sReason, Comms, iTime, iCommType);
+	if (!StrEqual(sEndpoints[Comms], ""))
+		SendReport(iAdmin, iTarget, sReason, Comms, iTime, iCommType);
 }
 
 public void SBPP_OnReportPlayer(int iReporter, int iTarget, const char[] sReason)
 {
-	SendReport(iReporter, iTarget, sReason, Report);
+	if (!StrEqual(sEndpoints[Report], ""))
+		SendReport(iReporter, iTarget, sReason, Report);
 }
 
 void SendReport(int iClient, int iTarget, const char[] sReason, int iType = Ban, int iTime = -1, any extra = 0)
 {
 	if (iTarget != -1 && !IsValidClient(iTarget))
 		return;
-
-	if (StrEqual(sEndpoints[Ban], ""))
-	{
-		LogError("Missing ban hook endpoint");
-		return;
-	}
 
 	char sAuthor[MAX_NAME_LENGTH], 
 		sTarget[MAX_NAME_LENGTH], 
@@ -153,6 +156,12 @@ void SendReport(int iClient, int iTarget, const char[] sReason, int iType = Ban,
 
 	char szURLBuffer[512];
 	GetConVarString(WebsiteBaseURL, szURLBuffer, sizeof(szURLBuffer));
+
+	if (iType == Report && !StrEqual(sDiscordRoleID, ""))
+	{
+		Format(sBuffer, sizeof sBuffer, "<@&%s>", sDiscordRoleID);
+		json_object_set_new(jRequest, "content", json_string(sBuffer));
+	}
 
 	if(!(StrEqual(szURLBuffer, "")))
 	{
@@ -244,13 +253,11 @@ void SendReport(int iClient, int iTarget, const char[] sReason, int iType = Ban,
 	json_object_set_new(jContent, "fields", jFields);
 
 
-
 	json_array_append_new(jEmbeds, jContent);
 
 	json_object_set_new(jRequest, "username", json_string(szUsername));
 	json_object_set_new(jRequest, "avatar_url", json_string(szProfilePictureURL));
 	json_object_set_new(jRequest, "embeds", jEmbeds);
-
 
 
 	json_dump(jRequest, sJson, sizeof sJson, 0, false, false, true);
@@ -307,6 +314,8 @@ public void OnConvarChanged(ConVar convar, const char[] oldValue, const char[] n
 		Convars[Report].GetString(sEndpoints[Report], sizeof sEndpoints[]);
 	else if (convar == Convars[Comms])
 		Convars[Comms].GetString(sEndpoints[Comms], sizeof sEndpoints[]);
+	else if (convar == DiscordRoleID)
+		DiscordRoleID.GetString(sDiscordRoleID, sizeof sDiscordRoleID);
 }
 
 int GetEmbedColor(int iType)
@@ -324,8 +333,7 @@ void GetEndpoint(char[] sBuffer, int iBufferSize, int iType)
 		strcopy(sBuffer, iBufferSize, sEndpoints[iType]);
 		return;
 	}
-	
-	strcopy(sBuffer, iBufferSize, sEndpoints[Ban]);
+	strcopy(sBuffer, iBufferSize, "");
 }
 
 void GetCommType(char[] sBuffer, int iBufferSize, int iType)
