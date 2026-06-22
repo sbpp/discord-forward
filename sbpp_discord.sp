@@ -282,7 +282,7 @@ void SendReport(int iClient, int iTarget, const char[] sReason, int iType = Ban,
 		LogError("HTTP request failed for %s against %s", sAuthor, sTarget);
 }
 
-public int OnHTTPRequestComplete(Handle hRequest, bool bFailure, bool bRequestSuccessful, EHTTPStatusCode eStatusCode, int iClient, int iTarget)
+public void OnHTTPRequestComplete(Handle hRequest, bool bFailure, bool bRequestSuccessful, EHTTPStatusCode eStatusCode, int iClient, int iTarget)
 {
 	if (!bRequestSuccessful || eStatusCode != k_EHTTPStatusCode204NoContent)
 	{
